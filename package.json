@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/JosephMugo/fyyur/issues"
   },
-  "homepage": "https://github.com/JosephMugo/fyyur#readme"
+  "homepage": "https://github.com/JosephMugo/fyyur#readme",
+  "dependencies": {
+    "bootstrap": "^3.4.1"
+  }
 }
