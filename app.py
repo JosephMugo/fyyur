@@ -33,33 +33,35 @@ migrate = Migrate(app, db)
 # Models.
 #----------------------------------------------------------------------------#
 
+
+# ---------------  Venue Genre Table -----------------------------------------------
 venue_genre = db.Table('venue_genre',
     db.Column('venue_id', db.Integer, db.ForeignKey('Venue.id'), primary_key=True),
     db.Column('genre_id', db.Integer, db.ForeignKey('Genre.id'), primary_key=True)
 )
-
+# ---------------  Artist Genre Table -----------------------------------------------
 artist_genre = db.Table('artist_genre',
     db.Column('artist_id', db.Integer, db.ForeignKey('Artist.id'), primary_key=True),
     db.Column('genre_id', db.Integer, db.ForeignKey('Genre.id'), primary_key=True)
 )
-
+# ------------------  Genre Table (Association Object) --------------------------------------------------------
 class Genre(db.Model):
     __tablename__ = 'Genre'
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String)
 
-    venues = db.relationship('Venue', secondary=venue_genre, backref=db.backref('genres', lazy='dynamic'))
     artists = db.relationship('Artist', secondary=artist_genre, backref=db.backref('genres', lazy='dynamic'))
-
+    venues = db.relationship('Venue', secondary=venue_genre, backref=db.backref('genres', lazy='dynamic'))
+# ------------------  Show Table  --------------------------------------------------------
 class Show(db.Model):
     __tablename__ = 'Show'
     venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), primary_key=True)
     artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), primary_key=True)
-    start_time = db.Column(db.DateTime)
+    start_time = db.Column(db.DateTime, primary_key=True)
     
     artist = db.relationship('Artist', back_populates="venues")
     venue = db.relationship('Venue', backref=db.backref('artists'))
-
+# ------------------  Venue Table  --------------------------------------------------------
 class Venue(db.Model):
     __tablename__ = 'Venue'
 
@@ -77,10 +79,7 @@ class Venue(db.Model):
     seeking_description = db.Column(db.String, nullable=False)
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
     artist = db.relationship('Show', back_populates='venue')
-
-    
-
-
+# ------------------  Artist Table  --------------------------------------------------------
 class Artist(db.Model):
     __tablename__ = 'Artist'
 
@@ -99,7 +98,6 @@ class Artist(db.Model):
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
     venues = db.relationship('Show', back_populates='artist')
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
-    
 
 #----------------------------------------------------------------------------#
 # Filters.
