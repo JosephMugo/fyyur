@@ -271,7 +271,6 @@ def create_venue_submission():
   genres = request.form.getlist('genres')
   facebook_link = request.form.get('facebook_link')
   try:
-    # add new venue to database
     # create venue
     venue = Venue(name=name, city=city, state=state, address=address, phone=phone, image_link="", facebook_link=facebook_link, seeking_description="", seeking_talent=False, website="")
     # adds genres to venue
@@ -286,7 +285,7 @@ def create_venue_submission():
     # print('something', file=sys.stderr)
   except:
     db.session.rollback()
-    #prints error
+    # prints error
     print(sys.exc_info())
     # TODO: on unsuccessful db insert, flash an error instead.
     flash('An error occurred. Venue ' + name + ' could not be listed.')
@@ -480,13 +479,37 @@ def create_artist_form():
 def create_artist_submission():
   # called upon submitting the new artist listing form
   # TODO: insert form data as a new Venue record in the db, instead
-  # TODO: modify data to be the data object returned from db insertion
-  name = request.form.get('name', '')
+  name = request.form.get('name')
   print(name)
-  # on successful db insert, flash success
-  flash('Artist ' + request.form['name'] + ' was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Artist ' + data.name + ' could not be listed.')
+  city = request.form.get('city')
+  print(city)
+  state = request.form.get('state')
+  print(state)
+  phone = request.form.get('phone')
+  print(phone)
+  genres = request.form.getlist('genres')
+  print(genres)
+  facebook_link = request.form.get('facebook_link')
+  print(facebook_link)
+  # TODO: modify data to be the data object returned from db 
+  try:
+    artist = Artist(name=name, city=city, state=state, phone=phone, image_link="", facebook_link=facebook_link, seeking_description="", seeking_venue=False, website="")
+    # add genres to artist
+    for genre in genres:
+          artist_genre = Genre.query.filter_by(name=genre).first()
+          artist.genres.append(artist_genre)
+    db.session.add(artist)
+    db.session.commit()
+    # on successful db insert, flash success
+    flash('Artist ' + request.form['name'] + ' was successfully listed!')
+  except:
+    db.session.rollback()
+    # prints error
+    print(sys.exc_info())
+    # TODO: on unsuccessful db insert, flash an error instead.
+    flash('An error occurred. Artist ' + name + ' could not be listed.')
+  finally:
+    db.session.close()
   return render_template('pages/home.html')
 
 
