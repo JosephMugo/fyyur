@@ -2,6 +2,7 @@
 # Imports
 #----------------------------------------------------------------------------#
 import sys
+from datetime import datetime
 import json
 import dateutil.parser
 import babel
@@ -59,8 +60,8 @@ class Show(db.Model):
     artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), primary_key=True)
     start_time = db.Column(db.DateTime, primary_key=True)
     
-    artist = db.relationship('Artist', back_populates="venues")
-    venue = db.relationship('Venue', backref=db.backref('artists'))
+    artist = db.relationship('Artist', backref=db.backref("shows"))
+    venue = db.relationship('Venue', backref=db.backref('shows'))
 # ------------------  Venue Table  --------------------------------------------------------
 class Venue(db.Model):
     __tablename__ = 'Venue'
@@ -129,27 +130,30 @@ def index():
 def venues():
   # TODO: replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
-    "city": "San Francisco",
-    "state": "CA",
-    "venues": [{
-      "id": 1,
-      "name": "The Musical Hop",
-      "num_upcoming_shows": 0,
-    }, {
-      "id": 3,
-      "name": "Park Square Live Music & Coffee",
-      "num_upcoming_shows": 1,
-    }]
-  }, {
-    "city": "New York",
-    "state": "NY",
-    "venues": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }]
+  #get all cities
+  all_cities = []
+  cities = []
+  city_venues = []
+  venues = Venue.query.all()
+  for venue in venues:
+        if (venue.city + ', ' + venue.state) not in all_cities:
+              all_cities.append(venue.city + ', ' + venue.state)
+              city_venues = Venue.query.filter_by(city=venue.city).all()
+              venue_list = []
+              for venue in city_venues:
+                    venue_list.append({
+                      "id": venue.id,
+                      "name": venue.name,
+                      "num_upcoming_shows": 0
+                    })
+              cities.append(
+                {
+                  "city": venue.city,
+                  "state": venue.state,
+                  "venues": venue_list
+                }
+              )
+  data = cities
   return render_template('pages/venues.html', areas=data);
 
 @app.route('/venues/search', methods=['POST'])
@@ -308,16 +312,17 @@ def delete_venue(venue_id):
 @app.route('/artists')
 def artists():
   # TODO: replace with real data returned from querying the database
-  data=[{
-    "id": 4,
-    "name": "Guns N Petals",
-  }, {
-    "id": 5,
-    "name": "Matt Quevedo",
-  }, {
-    "id": 6,
-    "name": "The Wild Sax Band",
-  }]
+  data = []
+  try:
+    artists = Artist.query.all()
+    for artist in artists:
+          data.append({
+            "id": artist.id,
+            "name": artist.name
+          })
+    print('Succeeded in getting artist')
+  except:
+    print(sys.exc_info())
   return render_template('pages/artists.html', artists=data)
 
 @app.route('/artists/search', methods=['POST'])
@@ -480,17 +485,11 @@ def create_artist_submission():
   # called upon submitting the new artist listing form
   # TODO: insert form data as a new Venue record in the db, instead
   name = request.form.get('name')
-  print(name)
   city = request.form.get('city')
-  print(city)
   state = request.form.get('state')
-  print(state)
   phone = request.form.get('phone')
-  print(phone)
   genres = request.form.getlist('genres')
-  print(genres)
   facebook_link = request.form.get('facebook_link')
-  print(facebook_link)
   # TODO: modify data to be the data object returned from db 
   try:
     artist = Artist(name=name, city=city, state=state, phone=phone, image_link="", facebook_link=facebook_link, seeking_description="", seeking_venue=False, website="")
@@ -521,42 +520,20 @@ def shows():
   # displays list of shows at /shows
   # TODO: replace with real venues data.
   #       num_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
-    "venue_id": 1,
-    "venue_name": "The Musical Hop",
-    "artist_id": 4,
-    "artist_name": "Guns N Petals",
-    "artist_image_link": "https://images.unsplash.com/photo-1549213783-8284d0336c4f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=300&q=80",
-    "start_time": "2019-05-21T21:30:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 5,
-    "artist_name": "Matt Quevedo",
-    "artist_image_link": "https://images.unsplash.com/photo-1495223153807-b916f75de8c5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80",
-    "start_time": "2019-06-15T23:00:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 6,
-    "artist_name": "The Wild Sax Band",
-    "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-    "start_time": "2035-04-01T20:00:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 6,
-    "artist_name": "The Wild Sax Band",
-    "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-    "start_time": "2035-04-08T20:00:00.000Z"
-  }, {
-    "venue_id": 3,
-    "venue_name": "Park Square Live Music & Coffee",
-    "artist_id": 6,
-    "artist_name": "The Wild Sax Band",
-    "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
-    "start_time": "2035-04-15T20:00:00.000Z"
-  }]
+  data = []
+  try:
+    shows = Show.query.all()
+    for show in shows:
+          data.append({
+            "venue_id": show.venue_id,
+            "venue_name": show.artist.name,
+            "artist_id": show.artist_id,
+            "artist_image_link": show.artist.image_link,
+            "start_time": datetime.strftime(show.start_time, "%m/%d/%Y, %H:%M:%S")
+          })
+    print('Succeeded in appending shows')
+  except:
+    print(sys.exc_info())
   return render_template('pages/shows.html', shows=data)
 
 @app.route('/shows/create')
@@ -568,13 +545,32 @@ def create_shows():
 @app.route('/shows/create', methods=['POST'])
 def create_show_submission():
   # called to create new shows in the db, upon submitting new show listing form
+  artist_id = request.form.get('artist_id')
+  venue_id = request.form.get('venue_id')
+  start_time = request.form.get('start_time')
   # TODO: insert form data as a new Show record in the db, instead
-
-  # on successful db insert, flash success
-  flash('Show was successfully listed!')
-  # TODO: on unsuccessful db insert, flash an error instead.
-  # e.g., flash('An error occurred. Show could not be listed.')
-  # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
+  try:
+    #checks if artist exist
+    artist = Artist.query.filter_by(id=artist_id).first()
+    venue = Venue.query.filter_by(id=venue_id).first()
+    show = Show(start_time=start_time)
+    show.artist_id = artist_id
+    show.venue_id = venue_id
+    db.session.add(show)
+    db.session.commit()
+    print('Artist: ' + artist.name)
+    print('Venue: ' + venue.name)
+    # on successful db insert, flash success
+    flash('Show was successfully listed!')
+  except:
+    db.session.rollback()
+    print('Something went wrong')
+    print(sys.exc_info())
+    # TODO: on unsuccessful db insert, flash an error instead.
+    flash('An error occurred. Show could not be listed.')
+    # see: http://flask.pocoo.org/docs/1.0/patterns/flashing/
+  finally:
+    print('done')
   return render_template('pages/home.html')
 
 @app.errorhandler(404)
