@@ -197,6 +197,32 @@ def show_venue(venue_id):
   try:
     venue = Venue.query.filter_by(id=venue_id).first()
     genres = []
+    shows = venue.shows
+    now = datetime.now()
+    #
+    past_shows = list(filter(lambda show: show.start_time < now, shows))
+    past_shows_format = []
+    for show in past_shows:
+      print(venue.image_link)
+      past_shows_format.append({
+          "artist_id": show.venue_id,
+          "artist_name": Artist.query.filter_by(id=show.venue_id).first().name,
+          "artist_image_link": Artist.query.filter_by(id=show.venue_id).first().image_link,
+          "start_time": str(show.start_time)
+      })
+    past_shows_count = len(past_shows)
+    upcoming_shows = list(filter(lambda show: show.start_time > now, shows))
+    upcoming_shows_format = []
+
+    for show in upcoming_shows: 
+      upcoming_shows_format.append({
+          "artist_id": show.venue_id,
+          "artist_name": Artist.query.filter_by(id=show.venue_id).first().name,
+          "artist_image_link": Artist.query.filter_by(id=show.venue_id).first().image_link,
+          "start_time": str(show.start_time)
+      })
+    upcoming_shows_count = len(upcoming_shows)
+    #
     for genre in venue.genres:
           genres.append(genre.name)
     data={
@@ -212,10 +238,10 @@ def show_venue(venue_id):
       "seeking_talent": venue.seeking_talent,
       "seeking_description": venue.seeking_description,
       "image_link": venue.image_link,
-      "past_shows": [],
-      "upcoming_shows": [],
-      "past_shows_count": 0,
-      "upcoming_shows_count": 0,
+      "past_shows": past_shows_format,
+      "upcoming_shows": upcoming_shows_format,
+      "past_shows_count": past_shows_count,
+      "upcoming_shows_count": upcoming_shows_count,
     }
   except:
     flash('Venue with id: ' + str(venue_id) + ' does not exist')
@@ -242,9 +268,16 @@ def create_venue_submission():
   phone = request.form.get('phone')
   genres = request.form.getlist('genres')
   facebook_link = request.form.get('facebook_link')
+  seeking_description = request.form.get('seeking_description')
+  if (request.form.get('seeking_talent') == 'no'):
+        seeking_talent = False
+  else:
+        seeking_talent = True
+  website_link = request.form.get('website_link')
+  image_link = request.form.get('image_link')
   try:
     # create venue
-    venue = Venue(name=name, city=city, state=state, address=address, phone=phone, image_link="", facebook_link=facebook_link, seeking_description="", seeking_talent=False, website="")
+    venue = Venue(name=name, city=city, state=state, address=address, phone=phone, image_link=image_link, facebook_link=facebook_link, seeking_description=seeking_description, seeking_talent=seeking_talent, website=website_link)
     # adds genres to venue
     for genre in genres:
           venue_genre = Genre.query.filter_by(name=genre).first()
@@ -332,6 +365,28 @@ def show_artist(artist_id):
     print(artist_id)
     artist = Artist.query.filter_by(id=artist_id).first()
     genres = []
+    shows = artist.shows
+    now = datetime.now()
+    past_shows = list(filter(lambda show: show.start_time < now, shows))
+    past_shows_format = []
+    for show in past_shows:
+      past_shows_format.append({
+          "venue_id": show.venue_id,
+          "venue_name": Venue.query.filter_by(id=show.venue_id).first().name,
+          "venue_image_link": Venue.query.filter_by(id=show.venue_id).first().image_link,
+          "start_time": str(show.start_time)
+      })
+    past_shows_count = len(past_shows)
+    upcoming_shows = list(filter(lambda show: show.start_time > now, shows))
+    upcoming_shows_format = []
+    for show in upcoming_shows: 
+      upcoming_shows_format.append({
+          "venue_id": show.venue_id,
+          "venue_name": Venue.query.filter_by(id=show.venue_id).first().name,
+          "venue_image_link": Venue.query.filter_by(id=show.venue_id).first().image_link,
+          "start_time": str(show.start_time)
+      })
+    upcoming_shows_count = len(upcoming_shows)
     for genre in artist.genres.all():
           print(genre.name)
     data={
@@ -346,10 +401,10 @@ def show_artist(artist_id):
       "seeking_venue": artist.seeking_venue,
       "seeking_description": artist.seeking_description,
       "image_link": artist.image_link,
-      "past_shows": [],
-      "upcoming_shows": [],
-      "past_shows_count": 0,
-      "upcoming_shows_count": 0,
+      "past_shows": past_shows_format,
+      "upcoming_shows": upcoming_shows_format,
+      "past_shows_count": past_shows_count,
+      "upcoming_shows_count": upcoming_shows_count,
     }
   except:
     print(sys.exc_info())
@@ -502,9 +557,16 @@ def create_artist_submission():
   phone = request.form.get('phone')
   genres = request.form.getlist('genres')
   facebook_link = request.form.get('facebook_link')
+  image_link = request.form.get('image_link')
+  seeking_description = request.form.get('seeking_description')
+  if (request.form.get('seeking_venue') == 'no'):
+        seeking_venue = False
+  else:
+        seeking_venue = True
+  website_link = request.form('website_link')
   # TODO: modify data to be the data object returned from db 
   try:
-    artist = Artist(name=name, city=city, state=state, phone=phone, image_link="", facebook_link=facebook_link, seeking_description="", seeking_venue=False, website="")
+    artist = Artist(name=name, city=city, state=state, phone=phone, image_link=image_link, facebook_link=facebook_link, seeking_description=seeking_description, seeking_venue=seeking_venue, website=website_link)
     # add genres to artist
     for genre in genres:
           artist_genre = Genre.query.filter_by(name=genre).first()
