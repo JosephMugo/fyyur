@@ -205,9 +205,9 @@ def show_venue(venue_id):
     for show in past_shows:
       print(venue.image_link)
       past_shows_format.append({
-          "artist_id": show.venue_id,
-          "artist_name": Artist.query.filter_by(id=show.venue_id).first().name,
-          "artist_image_link": Artist.query.filter_by(id=show.venue_id).first().image_link,
+          "artist_id": show.artist_id,
+          "artist_name": Artist.query.filter_by(id=show.artist_id).first().name,
+          "artist_image_link": Artist.query.filter_by(id=show.artist_id).first().image_link,
           "start_time": str(show.start_time)
       })
     past_shows_count = len(past_shows)
@@ -216,7 +216,7 @@ def show_venue(venue_id):
 
     for show in upcoming_shows: 
       upcoming_shows_format.append({
-          "artist_id": show.venue_id,
+          "artist_id": show.artist_id,
           "artist_name": Artist.query.filter_by(id=show.venue_id).first().name,
           "artist_image_link": Artist.query.filter_by(id=show.venue_id).first().image_link,
           "start_time": str(show.start_time)
@@ -244,6 +244,7 @@ def show_venue(venue_id):
       "upcoming_shows_count": upcoming_shows_count,
     }
   except:
+    print(sys.exc_info())
     flash('Venue with id: ' + str(venue_id) + ' does not exist')
     return render_template('errors/500.html')
 
@@ -600,7 +601,7 @@ def shows():
     for show in shows:
           data.append({
             "venue_id": show.venue_id,
-            "venue_name": show.artist.name,
+            "venue_name": show.venue.name,
             "artist_id": show.artist_id,
             "artist_image_link": show.artist.image_link,
             "start_time": datetime.strftime(show.start_time, "%m/%d/%Y, %H:%M:%S")
