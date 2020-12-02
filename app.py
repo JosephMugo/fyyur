@@ -168,7 +168,7 @@ def index():
     db.session.commit()
   except:
     db.session.rollback()
-    print('Table already exist and may be referenced')
+    print('Table already exist and is being referenced')
   # Insert data into genre table
 
   return render_template('pages/home.html')
@@ -531,18 +531,27 @@ def create_artist_submission():
   # called upon submitting the new artist listing form
   # TODO: insert form data as a new Venue record in the db, instead
   name = request.form.get('name')
+  print(name)
   city = request.form.get('city')
+  print(city)
   state = request.form.get('state')
+  print(state)
   phone = request.form.get('phone')
+  print(phone)
   genres = request.form.getlist('genres')
+  print(genres)
   facebook_link = request.form.get('facebook_link')
+  print(facebook_link)
   image_link = request.form.get('image_link')
+  print(image_link)
   seeking_description = request.form.get('seeking_description')
+  print(seeking_description)
+  print(request.form.get('seeking_venue'))
   if (request.form.get('seeking_venue') == 'no'):
         seeking_venue = False
   else:
         seeking_venue = True
-  website_link = request.form('website_link')
+  website_link = request.form.get('website_link')
   # TODO: modify data to be the data object returned from db 
   try:
     artist = Artist(name=name, city=city, state=state, phone=phone, image_link=image_link, facebook_link=facebook_link, seeking_description=seeking_description, seeking_venue=seeking_venue, website=website_link)
