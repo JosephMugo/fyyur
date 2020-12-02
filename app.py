@@ -49,8 +49,8 @@ artist_genre = db.Table('artist_genre',
 class Genre(db.Model):
     __tablename__ = 'Genre'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String)
-
+    name = db.Column(db.String, unique=True)
+    
     artists = db.relationship('Artist', secondary=artist_genre, backref=db.backref('genres', lazy='dynamic'))
     venues = db.relationship('Venue', secondary=venue_genre, backref=db.backref('genres', lazy='dynamic'))
 # ------------------  Show Table  --------------------------------------------------------
@@ -120,6 +120,57 @@ app.jinja_env.filters['datetime'] = format_datetime
 
 @app.route('/')
 def index():
+  #------------------------------------------------------------------------------#
+  # This makes sure genre table has the right data because it is being referenced
+  #------------------------------------------------------------------------------#
+  # Delete all data from genre table
+  try:
+    db.session.query(Genre).delete()
+    db.session.commit()
+    alternative = Genre(name='Alternative')
+    blues = Genre(name='Blues')
+    classical = Genre(name='Classical')
+    country = Genre(name='Country')
+    electronic = Genre(name='Electronic')
+    folk = Genre(name='Folk')
+    funk = Genre(name='Funk')
+    hipHop = Genre(name='Hip-Hop')
+    heavyMetal = Genre(name='Heavy Metal')
+    instrumental = Genre(name='Instrumental')
+    jazz = Genre(name='Jazz')
+    musicalTheatre = Genre(name='Musical Theatre')
+    pop = Genre(name='Pop')
+    punk = Genre(name='Punk')
+    rAndB = Genre(name='R&B')
+    Reggae = Genre(name='Reggae')
+    rockNRoll = Genre(name='Rock n Roll')
+    soul = Genre(name='Soul')
+    other = Genre(name='Other')
+    db.session.add(alternative)
+    db.session.add(blues)
+    db.session.add(classical)
+    db.session.add(country)
+    db.session.add(electronic)
+    db.session.add(folk)
+    db.session.add(funk)
+    db.session.add(hipHop)
+    db.session.add(heavyMetal)
+    db.session.add(instrumental)
+    db.session.add(jazz)
+    db.session.add(musicalTheatre)
+    db.session.add(pop)
+    db.session.add(punk)
+    db.session.add(rAndB)
+    db.session.add(Reggae)
+    db.session.add(rockNRoll)
+    db.session.add(soul)
+    db.session.add(other)
+    db.session.commit()
+  except:
+    db.session.rollback()
+    print('Table already exist and may be referenced')
+  # Insert data into genre table
+
   return render_template('pages/home.html')
 
 
@@ -281,8 +332,8 @@ def create_venue_submission():
     venue = Venue(name=name, city=city, state=state, address=address, phone=phone, image_link=image_link, facebook_link=facebook_link, seeking_description=seeking_description, seeking_talent=seeking_talent, website=website_link)
     # adds genres to venue
     for genre in genres:
-          venue_genre = Genre.query.filter_by(name=genre).first()
-          venue.genres.append(venue_genre)
+          venue_genre_single = Genre.query.filter_by(name=genre).first()
+          venue.genres.append(venue_genre_single)
     db.session.add(venue)
     db.session.commit()
     # on successful db insert, flash success
